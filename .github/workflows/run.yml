@@ -1,16 +1,29 @@
 name: run stock bot
+
 on:
-  workflow_dispatch:
+  schedule:
+    # UTC 06:40 = 北京时间 14:40（工作日）；GitHub 定时可能有几分钟延迟
+    - cron: "40 6 * * 1-5"
+  workflow_dispatch: {}
+
+concurrency:
+  group: stock-bot
+  cancel-in-progress: false
+
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip install -r requirements.txt
-      - name: run bot
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install deps
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+      - name: Run bot
         env:
+          TZ: Asia/Shanghai
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           SENDKEY: ${{ secrets.SENDKEY }}
-        run: python bot.py
+        run: python3 bot.py

@@ -1,2 +1,3 @@
-baostock
+akshare>=1.16
+pandas
 requests

@@ -1,8 +1,7 @@
 import baostock as bs
 import requests
 
-SEND_KEY = "在这里粘贴你的SendKey"
-
+SEND_KEY = "SCT479326Twzj"
 def send_wechat(msg):
     url = f"https://sctapi.ftqq.com/{SEND_KEY}.send"
     requests.post(url, data={"title":"股票信号提醒", "desp":msg})

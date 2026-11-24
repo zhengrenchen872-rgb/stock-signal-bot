@@ -2,9 +2,11 @@ name: run stock bot
 
 on:
   schedule:
-    # UTC 06:40 = 北京时间 14:40（工作日）；GitHub 定时可能有几分钟延迟
     - cron: "40 6 * * 1-5"
   workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 concurrency:
   group: stock-bot
@@ -27,3 +29,16 @@ jobs:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           SENDKEY: ${{ secrets.SENDKEY }}
         run: python3 bot.py
+      - name: Score past signals
+        env:
+          TZ: Asia/Shanghai
+        run: python3 bot.py --score
+      - name: Commit signal log
+        run: |
+          git config user.name "stock-bot"
+          git config user.email "bot@users.noreply.github.com"
+          [ -f signals.csv ] || { echo "no signals.csv yet"; exit 0; }
+          git add signals.csv
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "chore: signal log $(date +%F)"
+          git pull --rebase && git push
